@@ -34,3 +34,9 @@ export type FlairDefinition = {
 export declare const STREAK_FLAIRS: FlairDefinition[];
 export declare const CRISIS_FLAIR: FlairDefinition;
 export declare const VETERAN_FLAIR: FlairDefinition;
+export declare const ORACLE_FLAIR: FlairDefinition;
+export declare const MUTATION_CREATOR_FLAIR: FlairDefinition;
+export declare const FLAIR_HIERARCHY: readonly string[];
+export declare const EVENT_MIN_GAP_DAYS = 4;
+export declare const EVENT_SCHEDULE_AHEAD_DAYS = 5;
+export declare const ORACLE_WINDOW_DAYS = 3;

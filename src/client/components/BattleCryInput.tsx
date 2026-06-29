@@ -5,9 +5,10 @@ import type { BattleCry } from '../../types';
 type Props = {
   day: number;
   activeBattleCry: BattleCry | null;
+  onVoteBattleCry?: (authorId: string) => void;
 };
 
-export function BattleCryInput({ day, activeBattleCry }: Props): JSX.Element {
+export function BattleCryInput({ day, activeBattleCry, onVoteBattleCry }: Props): JSX.Element {
   const [text, setText] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submittedText, setSubmittedText] = useState('');
@@ -29,6 +30,21 @@ export function BattleCryInput({ day, activeBattleCry }: Props): JSX.Element {
   };
 
   const displayCry = activeBattleCry?.text ?? (submitted ? submittedText : null);
+  const canVote = !!activeBattleCry && !!onVoteBattleCry;
+
+  const handleBattleCryVote = async () => {
+    if (!activeBattleCry || !onVoteBattleCry) return;
+    try {
+      await fetch('/api/game/battle-cry-vote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ day, authorId: activeBattleCry.authorId }),
+      });
+      onVoteBattleCry(activeBattleCry.authorId);
+    } catch {
+      // non-critical
+    }
+  };
 
   return (
     <div
@@ -45,7 +61,19 @@ export function BattleCryInput({ day, activeBattleCry }: Props): JSX.Element {
           <div style={{ fontSize: 10, color: 'var(--crisis)', fontWeight: 700, marginBottom: 4, letterSpacing: 1 }}>
             ⚔️ EN YÜKSEK SAVAŞ ÇIĞLIĞI
           </div>
-          <div style={{ fontSize: 13, color: 'var(--text)', fontStyle: 'italic' }}>"{displayCry}"</div>
+          <div style={{ fontSize: 13, color: 'var(--text)', fontStyle: 'italic', marginBottom: canVote ? 8 : 0 }}>"{displayCry}"</div>
+          {canVote && (
+            <button
+              onClick={() => void handleBattleCryVote()}
+              style={{
+                background: 'rgba(255,60,60,0.12)', border: '1px solid var(--crisis)',
+                color: 'var(--crisis)', borderRadius: 6,
+                padding: '4px 10px', fontSize: 11, cursor: 'pointer', fontWeight: 700,
+              }}
+            >
+              ⬆️ {activeBattleCry.votes} oy
+            </button>
+          )}
         </div>
       ) : (
         <div>

@@ -1,20 +1,25 @@
 import type { JSX } from 'react';
-import type { MutationRecord, BattleScar, EnvironmentalEventDefinition } from '../../types';
+import type { MutationRecord, BattleScar, EnvironmentalEventDefinition, LoreEntry } from '../../types';
 import { MUTATION_MAP } from '../../constants/mutations';
 
 type Props = {
   history: MutationRecord[];
   battleScars: BattleScar[];
   events: EnvironmentalEventDefinition[];
+  loreEntries: LoreEntry[];
   onClose: () => void;
 };
 
-export function Timeline({ history, battleScars, events, onClose }: Props): JSX.Element {
+export function Timeline({ history, battleScars, events, loreEntries, onClose }: Props): JSX.Element {
   const eventMap = new Map(events.map(e => [e.id, e]));
 
   type ScarEntry = { scar: BattleScar; eventDef: EnvironmentalEventDefinition | undefined };
   const scarByDay = new Map<number, ScarEntry>(
     battleScars.map(s => [s.day, { scar: s, eventDef: eventMap.get(s.eventId) }])
+  );
+
+  const loreByDay = new Map<number, LoreEntry>(
+    (loreEntries ?? []).map(l => [l.day, l])
   );
 
   const sorted = [...history].sort((a, b) => b.day - a.day);
@@ -53,6 +58,7 @@ export function Timeline({ history, battleScars, events, onClose }: Props): JSX.
         {sorted.map(record => {
           const mutation = MUTATION_MAP[record.mutationId];
           const entry = scarByDay.get(record.day);
+          const lore = loreByDay.get(record.day);
           const hasScar = !!entry;
           const scarColor = hasScar ? 'var(--scar)' : undefined;
 
@@ -77,6 +83,26 @@ export function Timeline({ history, battleScars, events, onClose }: Props): JSX.
                   {mutation && (
                     <div style={{ fontSize: 10, color: 'var(--text)', opacity: 0.5, marginTop: 2 }}>
                       {mutation.statChanges.map(sc => `${sc.amount > 0 ? '+' : ''}${sc.amount} ${sc.stat}`).join(' · ')}
+                    </div>
+                  )}
+                  {lore && (
+                    <div
+                      style={{
+                        marginTop: 8, padding: '6px 8px',
+                        background: 'rgba(180,130,40,0.10)',
+                        border: '1px solid rgba(180,130,40,0.35)',
+                        borderRadius: 5,
+                      }}
+                    >
+                      <div style={{ fontSize: 9, color: '#b88228', fontWeight: 700, letterSpacing: 1, marginBottom: 3 }}>
+                        📜 VAKAYİNAME
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text)', opacity: 0.75, fontStyle: 'italic', lineHeight: 1.4 }}>
+                        "{lore.text}"
+                      </div>
+                      <div style={{ fontSize: 9, color: 'var(--text)', opacity: 0.35, marginTop: 3 }}>
+                        — {lore.authorId} · {lore.votes} oy
+                      </div>
                     </div>
                   )}
                 </div>

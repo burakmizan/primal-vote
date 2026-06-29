@@ -156,6 +156,24 @@ export type UpcomingEventPreview = {
     requiredStats: RequiredStats;
     crisisRisk: 'low' | 'medium' | 'high' | 'certain';
 };
+export type OraclePrediction = {
+    userId: string;
+    username: string;
+    prediction: 'survive' | 'fail';
+    day: number;
+    eventId: string;
+};
+export type ScheduledEvent = {
+    eventId: string;
+    targetDay: number;
+    oraclePosted: boolean;
+    oraclePostId?: string;
+};
+export type PendingLore = {
+    eventId: string;
+    day: number;
+    postId: string;
+};
 export type GameStatePayload = {
     creature: CreatureState;
     dailyVote: DailyVote | null;
@@ -163,6 +181,9 @@ export type GameStatePayload = {
     userState: UserState;
     upcomingEvent: UpcomingEventPreview | null;
     activeBattleCry: BattleCry | null;
+    hallOfFame?: GenerationRecord[];
+    isMod?: boolean;
+    loreEntries?: LoreEntry[];
 };
 export type ClientMessage = {
     type: 'CAST_VOTE';

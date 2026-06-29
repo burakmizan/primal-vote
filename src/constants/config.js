@@ -51,4 +51,25 @@ export const VETERAN_FLAIR = {
     id: 'veteran',
     label: '🔰 Veteran',
 };
+export const ORACLE_FLAIR = {
+    id: 'oracle',
+    label: '🔮 Oracle',
+};
+export const MUTATION_CREATOR_FLAIR = {
+    id: 'mutation_creator',
+    label: '🧬 Mutasyon Yaratıcısı',
+};
+export const FLAIR_HIERARCHY = [
+    'dedicated_evolver',
+    'elder_voter',
+    'ancient_council',
+    'primal_guardian',
+    'crisis_survivor',
+    'veteran',
+    'oracle',
+    'mutation_creator',
+];
+export const EVENT_MIN_GAP_DAYS = 4;
+export const EVENT_SCHEDULE_AHEAD_DAYS = 5;
+export const ORACLE_WINDOW_DAYS = 3;
 //# sourceMappingURL=config.js.map

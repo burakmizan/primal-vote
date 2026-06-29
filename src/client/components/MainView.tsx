@@ -155,6 +155,7 @@ export function MainView({
             history={creature.mutationHistory}
             battleScars={creature.battleScars}
             events={EVENTS}
+            loreEntries={gameState.loreEntries ?? []}
             onClose={() => setTab('main')}
           />
         )}

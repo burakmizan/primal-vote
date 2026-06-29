@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { JSX } from 'react';
 import type { CrisisState, EnvironmentalEventDefinition, CreatureState, BattleCry } from '../../types';
 import { BattleCryInput } from './BattleCryInput';
@@ -255,6 +255,14 @@ function ChainCrisis({ crisis, onVote }: { crisis: CrisisState; onVote: (v: stri
 
 export function CrisisView({ crisis, eventDef, creature, activeBattleCry, onVote }: Props): JSX.Element {
   const showBattleCry = Date.now() - crisis.startTime < 3 * 3_600_000;
+  const [localBattleCry, setLocalBattleCry] = useState<BattleCry | null>(activeBattleCry);
+
+  const handleBattleCryVote = useCallback((authorId: string) => {
+    setLocalBattleCry(prev => {
+      if (!prev || prev.authorId !== authorId) return prev;
+      return { ...prev, votes: prev.votes + 1 };
+    });
+  }, []);
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh', borderTop: '3px solid var(--crisis)' }}>
@@ -274,7 +282,11 @@ export function CrisisView({ crisis, eventDef, creature, activeBattleCry, onVote
 
       {showBattleCry && (
         <div style={{ paddingTop: 8 }}>
-          <BattleCryInput day={creature.day} activeBattleCry={activeBattleCry} />
+          <BattleCryInput
+            day={creature.day}
+            activeBattleCry={localBattleCry}
+            onVoteBattleCry={handleBattleCryVote}
+          />
         </div>
       )}
 

@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { context, reddit } from '@devvit/web/server';
-import { EVENT_MAP } from '../../constants/events';
 import {
   getCreatureState,
   getDailyVote,
@@ -11,9 +10,14 @@ import {
   setCrisisState,
   getBattleCries,
   addBattleCry,
+  setBattleCries,
   getGenerations,
+  getLoreEntries,
+  getUserBattleCryEventId,
+  setUserBattleCryEventId,
 } from '../redis';
-import { updateStreak, calculateFlair } from '../gameLogic';
+import { updateStreak, calculateFlair, shouldUpgradeFlair } from '../gameLogic';
+import { buildUpcomingEventPreview } from '../scheduler';
 import type { UserState, GameStatePayload, ServerMessage, BattleCry } from '../../types';
 
 export const api = new Hono();
@@ -47,11 +51,13 @@ api.post('/game/state', async (c) => {
     return c.json<ServerMessage>({ type: 'ERROR', message: 'Game not initialized' }, 404);
   }
 
-  const [dailyVote, userStateRaw, battleCries, hallOfFame] = await Promise.all([
+  const [dailyVote, userStateRaw, battleCries, hallOfFame, loreEntries, upcomingEvent] = await Promise.all([
     getDailyVote(subredditId, creature.day),
     getUserState(subredditId, userId || username),
     getBattleCries(subredditId, creature.day),
     getGenerations(subredditId),
+    getLoreEntries(subredditId, creature.day),
+    buildUpcomingEventPreview(subredditId, creature.day, creature.stats),
   ]);
 
   const userState = userStateRaw ?? defaultUserState(userId || username);
@@ -65,10 +71,11 @@ api.post('/game/state', async (c) => {
     dailyVote,
     crisis,
     userState,
-    upcomingEvent: null,
+    upcomingEvent,
     activeBattleCry,
     hallOfFame,
     isMod: false,
+    loreEntries: loreEntries.length > 0 ? loreEntries : undefined,
   };
 
   return c.json<ServerMessage>({ type: 'GAME_STATE', payload });
@@ -116,8 +123,9 @@ api.post('/game/vote', async (c) => {
 
   const updatedUserState = updateStreak(userState, body.day);
   const flairId = calculateFlair(updatedUserState);
+  const currentTop = updatedUserState.flair[0] ?? '';
 
-  if (flairId && updatedUserState.flair[0] !== flairId) {
+  if (flairId && shouldUpgradeFlair(currentTop, flairId)) {
     updatedUserState.flair = [flairId, ...updatedUserState.flair.filter(f => f !== flairId)];
     if (username) {
       try {
@@ -219,36 +227,6 @@ api.post('/game/confirm-hint', async (c) => {
   return c.json({ status: 'ok' });
 });
 
-// Check upcoming event (helper for GET_STATE upcomingEvent)
-api.get('/game/upcoming-event', async (c) => {
-  const subredditId = context.subredditId;
-  const creature = await getCreatureState(subredditId);
-  if (!creature) return c.json({ upcomingEvent: null });
-
-  const lookaheadDay = creature.day + 3;
-  const lastEventDay = creature.battleScars.length > 0
-    ? Math.max(...creature.battleScars.map(s => s.day))
-    : 0;
-
-  if (lookaheadDay - lastEventDay < 3) return c.json({ upcomingEvent: null });
-
-  // Find the event scheduled for lookahead day (simplified: use ice_age as demo)
-  const demoEventId = 'ice_age';
-  const eventDef = EVENT_MAP[demoEventId];
-  if (!eventDef) return c.json({ upcomingEvent: null });
-
-  return c.json({
-    upcomingEvent: {
-      eventId: eventDef.id,
-      eventName: eventDef.name,
-      icon: eventDef.icon,
-      daysUntil: 3,
-      tier: eventDef.tier,
-      requiredStats: eventDef.requiredStats,
-      crisisRisk: 'high' as const,
-    },
-  });
-});
 
 // SUBMIT_BATTLE_CRY
 api.post('/game/battle-cry', async (c) => {
@@ -262,6 +240,15 @@ api.post('/game/battle-cry', async (c) => {
     return c.json({ status: 'error', message: 'Invalid request' }, 400);
   }
 
+  // One battle cry per user per crisis (keyed by eventId via crisis state)
+  const crisis = await getCrisisState(subredditId);
+  const crisisEventId = crisis?.eventId ?? `day_${body.day}`;
+
+  const existingEventId = await getUserBattleCryEventId(subredditId, authorId);
+  if (existingEventId === crisisEventId) {
+    return c.json({ status: 'error', message: 'Already submitted a battle cry for this crisis' }, 409);
+  }
+
   const cry: BattleCry = {
     text: body.text.trim().slice(0, 50),
     authorId,
@@ -270,6 +257,28 @@ api.post('/game/battle-cry', async (c) => {
   };
 
   await addBattleCry(subredditId, cry);
+  await setUserBattleCryEventId(subredditId, authorId, crisisEventId);
+  return c.json({ status: 'ok' });
+});
+
+// VOTE_BATTLE_CRY
+api.post('/game/battle-cry-vote', async (c) => {
+  const body = await c.req.json<{ day: number; authorId: string }>();
+  const subredditId = context.subredditId;
+
+  const cries = await getBattleCries(subredditId, body.day);
+  const idx = cries.findIndex(cry => cry.authorId === body.authorId);
+  if (idx === -1) {
+    return c.json({ status: 'error', message: 'Battle cry not found' }, 404);
+  }
+
+  const updated = [...cries];
+  const target = updated[idx];
+  if (target !== undefined) {
+    updated[idx] = { ...target, votes: target.votes + 1 };
+  }
+  await setBattleCries(subredditId, body.day, updated);
+
   return c.json({ status: 'ok' });
 });
 

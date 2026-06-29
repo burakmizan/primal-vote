@@ -35,6 +35,9 @@ import {
   STREAK_FLAIRS,
   CRISIS_FLAIR,
   VETERAN_FLAIR,
+  FLAIR_HIERARCHY,
+  ORACLE_FLAIR,
+  MUTATION_CREATOR_FLAIR,
 } from '../constants/config';
 import { EVENT_MAP } from '../constants/events';
 
@@ -183,11 +186,27 @@ export function pickEvent(
   allEvents: EnvironmentalEventDefinition[]
 ): EnvironmentalEventDefinition | null {
   const usedSet = new Set(usedEventIds);
-  const eligible = allEvents.filter(e => e.minDay <= day && !usedSet.has(e.id));
+
+  // Enforce tier restrictions by day
+  const eligible = allEvents.filter(e => {
+    if (!e.minDay || e.minDay > day) return false;
+    if (e.tier >= 3 && day < 7) return false;
+    if (e.tier >= 2 && day < 3) return false;
+    return !usedSet.has(e.id);
+  });
+
   if (eligible.length === 0) return null;
 
-  // Weighted: Tier 1 = 3×, Tier 2 = 2×, Tier 3 = 1×
-  const weights = eligible.map(e => (e.tier === 1 ? 3 : e.tier === 2 ? 2 : 1));
+  // Boost Tier 3 weight for dramatic finale (days 28–30)
+  const isFinale = day >= 28;
+
+  // Weighted: Tier 1 = 3×, Tier 2 = 2×, Tier 3 = 1× (or 4× in finale)
+  const weights = eligible.map(e => {
+    if (e.tier === 1) return 3;
+    if (e.tier === 2) return 2;
+    return isFinale ? 4 : 1; // Tier 3
+  });
+
   const total = weights.reduce((a, b) => a + b, 0);
   let rand = Math.random() * total;
 
@@ -436,6 +455,28 @@ export function calculateFlair(userState: UserState): string {
 
   return flairDef?.id ?? '';
 }
+
+export function getFlairPriority(flairId: string): number {
+  const idx = FLAIR_HIERARCHY.indexOf(flairId);
+  return idx; // -1 if not found (unknown flair = lowest)
+}
+
+export function shouldUpgradeFlair(currentFlair: string, newFlair: string): boolean {
+  if (!newFlair) return false;
+  return getFlairPriority(newFlair) > getFlairPriority(currentFlair);
+}
+
+export function applyFlairIfUpgrade(userState: UserState, newFlairId: string): UserState {
+  const currentTop = userState.flair[0] ?? '';
+  if (!shouldUpgradeFlair(currentTop, newFlairId)) return userState;
+  return {
+    ...userState,
+    flair: [newFlairId, ...userState.flair.filter(f => f !== newFlairId)],
+  };
+}
+
+// Expose for oracle flair assignment
+export { ORACLE_FLAIR, MUTATION_CREATOR_FLAIR };
 
 export function updateRecentVoteAvg(
   currentAvg: number,

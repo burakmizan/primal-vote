@@ -7,6 +7,8 @@ import type {
   GenerationRecord,
   BattleCry,
   LoreEntry,
+  ScheduledEvent,
+  PendingLore,
 } from '../types';
 import { REDIS_PREFIX, DEMO_SEED_DAY, DEMO_SEED_CREATURE_NAME } from '../constants/config';
 
@@ -18,6 +20,9 @@ const k = {
   generations: (sub: string) => `${REDIS_PREFIX}:${sub}:generations`,
   battleCries: (sub: string, day: number) => `${REDIS_PREFIX}:${sub}:battlecry:${day}`,
   lore: (sub: string, day: number) => `${REDIS_PREFIX}:${sub}:lore:${day}`,
+  scheduledEvent: (sub: string) => `${REDIS_PREFIX}:${sub}:scheduled_event`,
+  userBattleCry: (sub: string, userId: string) => `${REDIS_PREFIX}:${sub}:bcry_user:${userId}`,
+  pendingLore: (sub: string) => `${REDIS_PREFIX}:${sub}:pending_lore`,
 };
 
 export async function getCreatureState(subredditId: string): Promise<CreatureState | null> {
@@ -82,6 +87,10 @@ export async function addBattleCry(subredditId: string, cry: BattleCry): Promise
   await redis.set(k.battleCries(subredditId, cry.day), JSON.stringify(list));
 }
 
+export async function setBattleCries(subredditId: string, day: number, cries: BattleCry[]): Promise<void> {
+  await redis.set(k.battleCries(subredditId, day), JSON.stringify(cries));
+}
+
 export async function getLoreEntries(subredditId: string, day: number): Promise<LoreEntry[]> {
   const raw = await redis.get(k.lore(subredditId, day));
   return raw !== undefined ? (JSON.parse(raw) as LoreEntry[]) : [];
@@ -91,6 +100,47 @@ export async function addLoreEntry(subredditId: string, entry: LoreEntry): Promi
   const list = await getLoreEntries(subredditId, entry.day);
   list.push(entry);
   await redis.set(k.lore(subredditId, entry.day), JSON.stringify(list));
+}
+
+// ── Scheduled Event ───────────────────────────────────────────────────────────
+
+export async function getScheduledEvent(subredditId: string): Promise<ScheduledEvent | null> {
+  const raw = await redis.get(k.scheduledEvent(subredditId));
+  return raw !== undefined ? (JSON.parse(raw) as ScheduledEvent) : null;
+}
+
+export async function setScheduledEvent(subredditId: string, event: ScheduledEvent): Promise<void> {
+  await redis.set(k.scheduledEvent(subredditId), JSON.stringify(event));
+}
+
+export async function clearScheduledEvent(subredditId: string): Promise<void> {
+  await redis.del(k.scheduledEvent(subredditId));
+}
+
+// ── User Battle Cry Deduplication ─────────────────────────────────────────────
+
+export async function getUserBattleCryEventId(subredditId: string, userId: string): Promise<string | null> {
+  const raw = await redis.get(k.userBattleCry(subredditId, userId));
+  return raw !== undefined ? raw : null;
+}
+
+export async function setUserBattleCryEventId(subredditId: string, userId: string, eventId: string): Promise<void> {
+  await redis.set(k.userBattleCry(subredditId, userId), eventId);
+}
+
+// ── Pending Lore ──────────────────────────────────────────────────────────────
+
+export async function getPendingLore(subredditId: string): Promise<PendingLore | null> {
+  const raw = await redis.get(k.pendingLore(subredditId));
+  return raw !== undefined ? (JSON.parse(raw) as PendingLore) : null;
+}
+
+export async function setPendingLore(subredditId: string, lore: PendingLore): Promise<void> {
+  await redis.set(k.pendingLore(subredditId), JSON.stringify(lore));
+}
+
+export async function clearPendingLore(subredditId: string): Promise<void> {
+  await redis.del(k.pendingLore(subredditId));
 }
 
 export async function loadDemoSeedState(subredditId: string): Promise<void> {
@@ -129,4 +179,12 @@ export async function loadDemoSeedState(subredditId: string): Promise<void> {
     lastUpdatedDay: DEMO_SEED_DAY,
   };
   await setCreatureState(subredditId, creature);
+
+  // Pre-schedule Buzul Çağı for Day 21 so EventBanner shows on Day 18
+  const scheduled: ScheduledEvent = {
+    eventId: 'ice_age',
+    targetDay: DEMO_SEED_DAY + 3, // Day 21
+    oraclePosted: false,
+  };
+  await setScheduledEvent(subredditId, scheduled);
 }

@@ -64,3 +64,29 @@ export const VETERAN_FLAIR: FlairDefinition = {
   id: 'veteran',
   label: '🔰 Veteran',
 };
+
+export const ORACLE_FLAIR: FlairDefinition = {
+  id: 'oracle',
+  label: '🔮 Oracle',
+};
+
+export const MUTATION_CREATOR_FLAIR: FlairDefinition = {
+  id: 'mutation_creator',
+  label: '🧬 Mutasyon Yaratıcısı',
+};
+
+// Priority order: index 0 = lowest, last = highest. Only upgrade, never downgrade.
+export const FLAIR_HIERARCHY: readonly string[] = [
+  'dedicated_evolver',
+  'elder_voter',
+  'ancient_council',
+  'primal_guardian',
+  'crisis_survivor',
+  'veteran',
+  'oracle',
+  'mutation_creator',
+];
+
+export const EVENT_MIN_GAP_DAYS = 4;
+export const EVENT_SCHEDULE_AHEAD_DAYS = 5;
+export const ORACLE_WINDOW_DAYS = 3;

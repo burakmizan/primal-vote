@@ -1,0 +1,290 @@
+import type { MutationDefinition } from '../types';
+
+export const MUTATIONS: MutationDefinition[] = [
+  {
+    id: 'scale_skin',
+    name: 'Deri Pulları',
+    description: 'Kalın pullar zırhı artırır ama ağırlık yavaşlatır.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'armor', amount: 2 },
+      { stat: 'speed', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_scale_skin',
+  },
+  {
+    id: 'long_legs',
+    name: 'Uzun Bacaklar',
+    description: 'Uzayan bacaklar hızı artırır, denge azalır.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'speed', amount: 2 },
+      { stat: 'armor', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_long_legs',
+  },
+  {
+    id: 'fat_layer',
+    name: 'Yağ Tabakası',
+    description: 'Deri altı yağ soğuğa karşı korur, ama hantallık getirir.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'cold', amount: 2 },
+      { stat: 'speed', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_fat_layer',
+  },
+  {
+    id: 'bioluminescence',
+    name: 'Biyolüminesans',
+    description: 'Parlayan doku hem akıl hem su uyumunu artırır.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'mind', amount: 1 },
+      { stat: 'aqua', amount: 1 },
+    ],
+    spriteLayerKey: 'layer_bioluminescence',
+  },
+  {
+    id: 'gills',
+    name: 'Solungaçlar',
+    description: 'Su altı solunumu sağlar, ama ateşe duyarlılık artar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'aqua', amount: 2 },
+      { stat: 'heat', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_gills',
+  },
+  {
+    id: 'claws',
+    name: 'Tırnak ve Pençe',
+    description: 'Keskin pençeler hem koruma hem çeviklik sağlar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'armor', amount: 1 },
+      { stat: 'speed', amount: 1 },
+    ],
+    spriteLayerKey: 'layer_claws',
+  },
+  {
+    id: 'horn',
+    name: 'Boynuz',
+    description: 'Sert boynuz zırhı güçlendirir, ama kafa ağırlığı zihni yorar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'armor', amount: 2 },
+      { stat: 'mind', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_horn',
+  },
+  {
+    id: 'wings',
+    name: 'Kanatlar',
+    description: 'Uçuş hızı artırır, ama su direnci zayıflar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'speed', amount: 2 },
+      { stat: 'aqua', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_wings',
+  },
+  {
+    id: 'fire_sac',
+    name: 'Ateş Kesesi',
+    description: 'İç ısı organi sıcaklık direncini yükseltir, su toleransını düşürür.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'heat', amount: 2 },
+      { stat: 'aqua', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_fire_sac',
+  },
+  {
+    id: 'venom_glands',
+    name: 'Zehir Bezleri',
+    description: 'Zehir hem savunmayı hem algısal keskinliği artırır.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'armor', amount: 1 },
+      { stat: 'mind', amount: 1 },
+    ],
+    spriteLayerKey: 'layer_venom_glands',
+  },
+  {
+    id: 'spines',
+    name: 'Kirpi Dikenleri',
+    description: 'Dikenler dokunulamaz zırh sağlar, su geçişini kısıtlar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'armor', amount: 2 },
+      { stat: 'aqua', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_spines',
+  },
+  {
+    id: 'hump',
+    name: 'Kambur',
+    description: 'Enerji depolayan kambur sıcak ve soğuğa dayanımı artırır, ama hareket yavaşlar.',
+    category: 'physical',
+    statChanges: [
+      { stat: 'cold', amount: 1 },
+      { stat: 'heat', amount: 1 },
+      { stat: 'speed', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_hump',
+  },
+  {
+    id: 'big_brain',
+    name: 'Büyük Beyin',
+    description: 'Genişleyen beyin zihni keskinleştirir, ağırlık hızı kısıtlar.',
+    category: 'cognitive',
+    statChanges: [
+      { stat: 'mind', amount: 2 },
+      { stat: 'speed', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_big_brain',
+  },
+  {
+    id: 'swarm_intelligence',
+    name: 'Sürü Zekası',
+    description: 'Kolektif bağlantı hem zihni hem savunma koordinasyonunu artırır.',
+    category: 'cognitive',
+    statChanges: [
+      { stat: 'mind', amount: 1 },
+      { stat: 'armor', amount: 1 },
+    ],
+    spriteLayerKey: 'layer_swarm_intelligence',
+  },
+  {
+    id: 'echolocation',
+    name: 'Echolocation',
+    description: 'Ses dalgalarıyla çevre algısı zihin gücünü artırır, ısı hassasiyeti düşer.',
+    category: 'cognitive',
+    statChanges: [
+      { stat: 'mind', amount: 2 },
+      { stat: 'heat', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_echolocation',
+  },
+  {
+    id: 'survival_instinct',
+    name: 'Hayatta Kalma İçgüdüsü',
+    description: 'Keskin içgüdüler hem refleksi hem sezgisel zihni güçlendirir.',
+    category: 'cognitive',
+    statChanges: [
+      { stat: 'speed', amount: 1 },
+      { stat: 'mind', amount: 1 },
+    ],
+    spriteLayerKey: 'layer_survival_instinct',
+  },
+  {
+    id: 'desert_adaptation',
+    name: 'Çöl Adaptasyonu',
+    description: 'Kuru iklime uyum ısı direncini yükseltir, su bağımlılığı artar.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'heat', amount: 2 },
+      { stat: 'aqua', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_desert_adaptation',
+  },
+  {
+    id: 'deep_sea',
+    name: 'Derin Deniz',
+    description: 'Okyanus derinliklerine uyum su direncini artırır, ısıya tolerans azalır.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'aqua', amount: 2 },
+      { stat: 'heat', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_deep_sea',
+  },
+  {
+    id: 'tundra_fur',
+    name: 'Tundra Kürkü',
+    description: 'Kalın kürk dondurucu soğuğa karşı korur, hantallık getirir.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'cold', amount: 2 },
+      { stat: 'speed', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_tundra_fur',
+  },
+  {
+    id: 'lava_walk',
+    name: 'Lav Yürüyüşü',
+    description: 'Lav üzerinde yürüme yeteneği aşırı ısı direnci sağlar, soğuğa karşı savunmasız bırakır.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'heat', amount: 3 },
+      { stat: 'cold', amount: -2 },
+    ],
+    spriteLayerKey: 'layer_lava_walk',
+  },
+  {
+    id: 'crystal_shell',
+    name: 'Kristal Kabuk',
+    description: 'Mineral kabuk zırhı ve soğuk direncini artırır, hareket kısıtlanır.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'armor', amount: 2 },
+      { stat: 'cold', amount: 1 },
+      { stat: 'speed', amount: -2 },
+    ],
+    spriteLayerKey: 'layer_crystal_shell',
+  },
+  {
+    id: 'sea_serpent',
+    name: 'Deniz Yılanı',
+    description: 'Yılan fiziği hem su hem hız kazandırır, zırh zayıflar.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'aqua', amount: 2 },
+      { stat: 'speed', amount: 1 },
+      { stat: 'armor', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_sea_serpent',
+  },
+  {
+    id: 'mountain_goat',
+    name: 'Dağ Keçisi',
+    description: 'Dağ tırmanışı çevikliği ve sağlamlığı artırır, su ortamı zorlaşır.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'speed', amount: 1 },
+      { stat: 'armor', amount: 1 },
+      { stat: 'aqua', amount: -1 },
+    ],
+    spriteLayerKey: 'layer_mountain_goat',
+  },
+  {
+    id: 'desert_scorpion',
+    name: 'Çöl Akrebi',
+    description: 'Akrep fiziği ısı, zırh ve zihni güçlendirir ama soğuğa tam açık bırakır.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'heat', amount: 1 },
+      { stat: 'armor', amount: 1 },
+      { stat: 'mind', amount: 1 },
+      { stat: 'cold', amount: -2 },
+    ],
+    spriteLayerKey: 'layer_desert_scorpion',
+  },
+  {
+    id: 'deep_mole',
+    name: 'Derin Köstebek',
+    description: 'Yer altı yaşamı zırhı ve zihni güçlendirir, üst dünya hareketini kısıtlar.',
+    category: 'adaptive',
+    statChanges: [
+      { stat: 'armor', amount: 2 },
+      { stat: 'mind', amount: 1 },
+      { stat: 'speed', amount: -2 },
+    ],
+    spriteLayerKey: 'layer_deep_mole',
+  },
+];
+
+export const MUTATION_MAP: Record<string, MutationDefinition> = Object.fromEntries(
+  MUTATIONS.map((m) => [m.id, m])
+);

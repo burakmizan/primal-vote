@@ -10,9 +10,11 @@ import {
   setDailyVote,
   setCrisisState,
   getBattleCries,
+  addBattleCry,
+  getGenerations,
 } from '../redis';
 import { updateStreak, calculateFlair } from '../gameLogic';
-import type { UserState, GameStatePayload, ServerMessage } from '../../types';
+import type { UserState, GameStatePayload, ServerMessage, BattleCry } from '../../types';
 
 export const api = new Hono();
 
@@ -45,14 +47,15 @@ api.post('/game/state', async (c) => {
     return c.json<ServerMessage>({ type: 'ERROR', message: 'Game not initialized' }, 404);
   }
 
-  const [dailyVote, userStateRaw, battleCries] = await Promise.all([
+  const [dailyVote, userStateRaw, battleCries, hallOfFame] = await Promise.all([
     getDailyVote(subredditId, creature.day),
     getUserState(subredditId, userId || username),
     getBattleCries(subredditId, creature.day),
+    getGenerations(subredditId),
   ]);
 
   const userState = userStateRaw ?? defaultUserState(userId || username);
-  const activeBattleCry = battleCries.reduce<typeof battleCries[number] | null>(
+  const activeBattleCry = battleCries.reduce<BattleCry | null>(
     (best, cry) => (best === null || cry.votes > best.votes ? cry : best),
     null
   );
@@ -64,6 +67,8 @@ api.post('/game/state', async (c) => {
     userState,
     upcomingEvent: null,
     activeBattleCry,
+    hallOfFame,
+    isMod: false,
   };
 
   return c.json<ServerMessage>({ type: 'GAME_STATE', payload });
@@ -243,6 +248,29 @@ api.get('/game/upcoming-event', async (c) => {
       crisisRisk: 'high' as const,
     },
   });
+});
+
+// SUBMIT_BATTLE_CRY
+api.post('/game/battle-cry', async (c) => {
+  const body = await c.req.json<{ text: string; day: number }>();
+  const subredditId = context.subredditId;
+  const userId = context.userId ?? '';
+  const username = context.username ?? '';
+  const authorId = userId || username;
+
+  if (!authorId || !body.text?.trim()) {
+    return c.json({ status: 'error', message: 'Invalid request' }, 400);
+  }
+
+  const cry: BattleCry = {
+    text: body.text.trim().slice(0, 50),
+    authorId,
+    votes: 0,
+    day: body.day,
+  };
+
+  await addBattleCry(subredditId, cry);
+  return c.json({ status: 'ok' });
 });
 
 // Legacy init (keep for compatibility)

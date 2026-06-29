@@ -199,6 +199,8 @@ export type GameStatePayload = {
   userState: UserState;
   upcomingEvent: UpcomingEventPreview | null;
   activeBattleCry: BattleCry | null;
+  hallOfFame?: GenerationRecord[];
+  isMod?: boolean;
 };
 
 export type ClientMessage =

@@ -9,6 +9,7 @@ import type { HintId } from './components/ContextualHint';
 export const App = () => {
   const [gameState, setGameState] = useState<GameStatePayload | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [userVotedOptionId, setUserVotedOptionId] = useState<string | null>(null);
   const [showWelcomeBack, setShowWelcomeBack] = useState(false);
   const welcomeShown = useRef(false);
@@ -23,6 +24,8 @@ export const App = () => {
             welcomeShown.current = true;
             setShowWelcomeBack(true);
           }
+        } else if (msg.type === 'ERROR') {
+          setErrorMsg(msg.message);
         }
       })
       .catch(console.error)
@@ -146,7 +149,9 @@ export const App = () => {
           color: 'var(--danger)', fontSize: 14, padding: 24, textAlign: 'center',
         }}
       >
-        Oyun yüklenemedi. Lütfen sayfayı yenileyin.
+        {errorMsg 
+          ? `Veritabanı Boş: ${errorMsg}. Lütfen sağ üstteki Mod menüsünden "Primal Vote: Load Demo State" butonuna basarak oyunu başlatın.` 
+          : 'Oyun yüklenemedi. Lütfen sayfayı yenileyin.'}
       </div>
     );
   }
